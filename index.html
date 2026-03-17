@@ -1,20 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,         initial-scale=1.0">
     <title>Title</title>
     <style>
         body {
             margin: 0;
             padding: 0;
+
+
         }
+
         .overall-container {
             display: flex;
             flex-direction: column;
             text-align: center;
             align-items: center;
         }
+
         header {
             background-color: rgb(124, 114, 59);
             color: white;
@@ -24,58 +28,89 @@
             text-transform: capitalize;
             text-align: center;
         }
+
         .units-insertion {
             margin-top: 10px;
         }
-        .units-insertion > label {
+
+        .units-insertion>label {
             font-size: 17px;
             margin-bottom: 10px;
         }
+
         .input-box {
             width: 200px;
             height: 21px;
             margin-top: 5px;
+            border-radius: 4px;
+        }
+
+        .input-box::placeholder {
+            padding: 6px;
             font-family: 'Times New Roman', Times, serif;
             font-size: 16px;
         }
-        .input-box::placeholder {
-            padding: 6px;
-        }
+
         .submit-button {
             background-color: rgb(62, 182, 62);
             border: none;
             border-radius: 3px;
-            padding: 4px 15px;
+            padding: 5px 15px;
             color: white;
             box-shadow: 2px 2px 7px rgb(21, 19, 19);
         }
+
+
+
         table {
-            background-color: rgb(134, 117, 117);
+            background-color: rgb(126, 127, 128);
             column-gap: 10px;
             row-gap: 2px;
             border-radius: 5px;
             margin-top: 10px;
+
+
         }
+
         caption {
             text-transform: uppercase;
             font-weight: 700;
         }
+
         tr {
             background-color: aquamarine;
+
         }
-        th, td {
-            padding: 5px 20px;
+
+        th,
+        td {
+            padding: 5px 30px;
             text-align: center;
         }
+
         th {
             text-transform: uppercase;
         }
+
         .total {
             background-color: rgb(162, 157, 157);
             color: white;
+
+        }
+
+        #download {
+            background-color: rgb(119, 119, 205);
+            border: none;
+            border-radius: 3px;
+            margin-top: 10px;
+            padding: 5px 15px;
+            color: white;
+            box-shadow: 2px 2px 7px rgb(21, 19, 19);
+
         }
     </style>
 </head>
+
 <body>
     <header>
         Examination results automator
@@ -84,124 +119,182 @@
         <div class="units-insertion">
             <label for="unit">Enter the No of units:</label><br>
             <input id="unit" autofocus class="input-box" type="number" placeholder="Enter here...">
-            <button class="submit-button">submit</button>
+
+            <table id="table"></table>
+
+            <div class="container"> </div>
         </div>
-        <table></table>
-        <div class="container"></div>
-    </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <script>
-        const codes = [];
-        let yearFinish = "";
-        let sum = 0;
-        let scores = [];
+        <script>
+            const codes = [];
 
-        document.querySelector('.input-box').addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                generateTable();
-            }
-        });
 
-        document.querySelector('.submit-button').addEventListener('click', () => {
-            generateTable();
-        });
-
-        function generateTable() {
-            const input = document.querySelector('.input-box').value;
-            const table = document.querySelector('table');
-            table.innerHTML = `
-                <caption>
-                    provision transcript for ${year()}${yearFormat()} year of study
-                </caption>
+            document.querySelector('.input-box').addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    const input = document.querySelector('.input-box').value;
+                    const table = document.querySelector('#table');
+                    table.innerHTML = `
+            
+            <caption>
+                provision transcript for ${year()}${yearFormat()} year of study
+            </caption >
                 <tr>
                     <th>units</th>
                     <th>score</th>
                     <th>grade</th>
-                </tr>`;
+                </tr>
+        
+        `
+                    noUnits(input);
+                    fetch(input);
+                    display(input);
+                    total(input);
+                    document.querySelector('.input-box').value = " ";
+                    document.querySelector('.container').innerHTML = `
+             <button id="download" onclick="file();">click to download</button>`
+                }
+            })
+            function noUnits(input) {
+                for (let i = 0; i < input; i++) {
+                    code = prompt(`Enter course code for unit${i + 1}: `);
+                    codes[i] = code.toUpperCase();
 
-            noUnits(input);
-            fetchScores(input);
-            display(input);
-            total(input);
-            document.querySelector('.input-box').value = "";
-        }
-
-        function noUnits(input) {
-            for (let i = 0; i < input; i++) {
-                let code = prompt(`Enter course code for unit ${i + 1}:`);
-                codes[i] = code.toUpperCase();
+                }
             }
-        }
-
-        function yearFormat() {
-            let format = "";
-            if (yearFinish == 3) { format = "RD"; }
-            else if (yearFinish == 2) { format = "ND"; }
-            else if (yearFinish == 1) { format = "ST"; }
-            else { format = "TH"; }
-            return format;
-        }
-
-        function year() {
-            const studyYear = prompt('Enter year of study:');
-            yearFinish = studyYear;
-            return studyYear;
-        }
-
-        function fetchScores(input) {
-            sum = 0;
-            for (let i = 0; i < input; i++) {
-                scores[i] = parseInt(prompt(`Enter score for ${codes[i]}:`));
-                sum += scores[i];
+            let yearFinish = "";
+            function yearFormat() {
+                let format = "";
+                if (yearFinish == 3) {
+                    format = "RD"
+                }
+                else if (yearFinish == 2) {
+                    format = "ND"
+                }
+                else if (yearFinish == 1) {
+                    format = "ST"
+                }
+                else {
+                    format = "TH"
+                }
+                return format;
             }
-        }
 
-        function display(input) {
+            function year() {
+                const studyYear = prompt('Enter year of study:')
+                yearFinish = studyYear;
+                return studyYear;
+            }
+            /** document.querySelector('.submit-button').addEventListener('click', () => {
+                 const input = document.querySelector('.input-box').value;
+                 const table = document.querySelector('table');
+                 table.innerHTML = `<table>
+                         <caption>
+                             provision transcript for ${year()}${yearFormat()} year of study
+                         </caption >
+                         <tr>
+                             <th>units</th>
+                             <th>score</th>
+                             <th>grade</th>
+                         </tr>
+                     </table>
+                     `
+                 noUnits(input);
+                 fetch(input);
+                 display(input);
+                 total(input);
+                 document.querySelector('.input-box').value = " ";
+                 document.querySelector('.container').innerHTML = `
+              <button id="download" onclick="file();"> click to download</button>`
+ 
+             });**/
+
+
+            let sum = 0;
+            let scores = [];
+            function fetch(input, code) {
+                for (let i = 0; i < input; i++) {
+                    scores[i] = parseInt(prompt(`Enter score for ${codes[i]}: `));
+                    sum += scores[i];
+                }
+            }
+
             let table = document.querySelector('table');
-            for (let i = 0; i < input; i++) {
+
+            function display(input) {
+                for (let i = 0; i < input; i++) {
+
+                    let row = document.createElement('tr');
+                    let td1 = document.createElement('td');
+                    let td2 = document.createElement('td');
+                    let td3 = document.createElement('td');
+                    table.append(row);
+                    row.append(td1);
+                    row.append(td2);
+                    row.append(td3);
+                    td1.innerText = codes[i];
+                    td2.innerText = scores[i];
+                    if (scores[i] >= 70 && scores[i] < 100) {
+                        td3.innerText = 'A';
+                    } else if (scores[i] >= 60 && scores[i] < 70) {
+                        td3.innerText = 'B';
+                    } else if (scores[i] >= 50 && scores[i] < 60) {
+                        td3.innerText = 'C';
+                    } else if (scores[i] >= 40 && scores[i] < 50) {
+                        td3.innerText = 'D';
+                    } else {
+                        td3.innerText = 'E';
+                    }
+                }
+            }
+            function total(input) {
+                let percentage = sum / input;
                 let row = document.createElement('tr');
-                let td1 = document.createElement('td');
-                let td2 = document.createElement('td');
-                let td3 = document.createElement('td');
                 table.append(row);
-                row.append(td1, td2, td3);
-                td1.innerText = codes[i];
-                td2.innerText = scores[i];
+                let td1 = document.createElement('td');
+                row.append(td1);
+                td1.innerText = `Percentage: ${percentage.toFixed(2)} % `;
+                td1.className = 'total';
 
-                if (scores[i] >= 70 && scores[i] < 100) { td3.innerText = 'A'; }
-                else if (scores[i] >= 60 && scores[i] < 70) { td3.innerText = 'B'; }
-                else if (scores[i] >= 50 && scores[i] < 60) { td3.innerText = 'C'; }
-                else if (scores[i] >= 40 && scores[i] < 50) { td3.innerText = 'D'; }
-                else { td3.innerText = 'E'; }
+                let td3 = document.createElement('td');
+                row.append(td3);
+                td3.innerText = `Total: ${sum}`;
+                td3.className = 'total';
+
+                let td2 = document.createElement('td');
+                row.append(td2);
+                if (percentage >= 70 && percentage < 100) {
+                    td2.innerText = 'Grade:A';
+                } else if (percentage >= 60 && percentage < 70) {
+                    td2.innerText = 'Grade:B';
+                } else if (percentage >= 50 && percentage < 60) {
+                    td2.innerText = 'Grade:C';
+                } else if (percentage >= 40 && percentage < 50) {
+                    td2.innerText = 'Grade:D';
+                } else {
+                    td2.innerText = 'Grade:E';
+                }
+
+                td2.className = 'total';
+
             }
-        }
+            function file() {
+                let element = document.querySelector('#table');
+                html2canvas(element).then(canvas => {
+                    const imgData = canvas.toDataURL("image/png");
+                    const { jsPDF } = window.jspdf;
+                    let pdf = new jsPDF();
+                    let imgWidth = 180;   // width of A4 page in mm
+                    let pageHeight = 275; // height of A4 page in mm
+                    let imgHeight = canvas.height * imgWidth / canvas.width;
+                    pdf.addImage(imgData, 'PNG', 15, 15, imgWidth, imgHeight);
+                    pdf.save("exam.pdf");
 
-        function total(input) {
-            let table = document.querySelector('table');
-            let percentage = sum / input;
-            let row = document.createElement('tr');
-            table.append(row);
+                });
+            }
 
-            let td1 = document.createElement('td');
-            row.append(td1);
-            td1.innerText = `Percentage: ${percentage.toFixed(2)} %`;
-            td1.className = 'total';
- let td3 = document.createElement('td');
-            row.append(td3);
-            td3.innerText = `Total: ${sum}`;
-            td3.className = 'total';
-
-            let td2 = document.createElement('td');
-            row.append(td2);
-            if (percentage >= 70 && percentage < 100) { td2.innerText = 'Grade: A'; }
-            else if (percentage >= 60 && percentage < 70) { td2.innerText = 'Grade: B'; }
-            else if (percentage >= 50 && percentage < 60) { td2.innerText = 'Grade: C'; }
-            else if (percentage >= 40 && percentage < 50) { td2.innerText = 'Grade: D'; }
-            else { td2.innerText = 'Grade: E'; }
-            td2.className = 'total';
-
-           
-        }
-    </script>
+        </script>
 </body>
+
 </html>
